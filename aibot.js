@@ -10,7 +10,7 @@ http.createServer((req, res) => {
 
 
 // --- SADECE TOKENİNİ YAZ ---
-const DISCORD_TOKEN = ('process.env.TOKEN'); 
+const DISCORD_TOKEN = process.env.TOKEN; 
 
 const client = new Client({ 
     intents: [
@@ -39,3 +39,4 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(DISCORD_TOKEN);
+
