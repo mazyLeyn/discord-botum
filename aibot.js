@@ -10,7 +10,7 @@ http.createServer((req, res) => {
 
 // --- KURULUMLAR ---
 // Sadece bir kez tanımlıyoruz
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY); 
+const genAI = new GoogleGenerativeAI("AIzaSyAvSrN5566VkJiziDpMcSeTv0oUjeFeo2Y");
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
 const client = new Client({ 
@@ -56,4 +56,5 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(process.env.TOKEN);
+
 
