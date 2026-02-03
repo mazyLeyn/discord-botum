@@ -1,7 +1,7 @@
 const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
 const { GoogleGenerativeAI } = require("@google/generative-ai"); // YZ Paketi
 const http = require('http');
-
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 // Render 7/24 Aktif Tutma Sunucusu
 http.createServer((req, res) => {
   res.write("Bot 7/24 Aktif!");
@@ -59,3 +59,4 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(process.env.TOKEN);
+
