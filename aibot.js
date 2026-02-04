@@ -10,7 +10,7 @@ http.createServer((req, res) => {
 
 // --- KURULUMLAR ---
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
 
 const client = new Client({ 
     intents: [
@@ -54,4 +54,5 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(process.env.TOKEN);
+
 
