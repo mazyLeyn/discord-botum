@@ -11,7 +11,7 @@ http.createServer((req, res) => {
 // --- KURULUMLAR ---
 // Sadece bir kez tanımlıyoruz
 const genAI = new GoogleGenerativeAI("AIzaSyAvSrN5566VkJiziDpMcSeTv0oUjeFeo2Y");
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 const client = new Client({ 
     intents: [
@@ -56,5 +56,6 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(process.env.TOKEN);
+
 
 
