@@ -1,5 +1,5 @@
 const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const http = require('http');
 
 // Render 7/24 Aktif Tutma Sunucusu
@@ -56,6 +56,7 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(process.env.TOKEN);
+
 
 
 
