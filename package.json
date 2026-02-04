@@ -1,5 +1,5 @@
 {
-  "name": "gemini-bot",
+  "name": "groq-discord-bot",
   "version": "1.0.0",
   "main": "aibot.js",
   "scripts": {
@@ -7,6 +7,6 @@
   },
   "dependencies": {
     "discord.js": "^14.16.3",
-    "@google/generative-ai": "^0.21.0"
+    "groq-sdk": "^0.9.0"
   }
 }
