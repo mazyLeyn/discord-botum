@@ -1,58 +1,37 @@
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { Client, GatewayIntentBits } = require('discord.js');
+const Groq = require("groq-sdk");
 const http = require('http');
 
-// Render Uyku Engelleyici
-http.createServer((req, res) => {
-    res.write("Bot Aktif!");
-    res.end();
-}).listen(process.env.PORT || 3000);
+// Render canlı tutucu
+http.createServer((req, res) => { res.write("Bot Online!"); res.end(); }).listen(process.env.PORT || 3000);
 
-// --- KURULUMLAR ---
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
-const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
-
+const groq = new Groq({ apiKey: process.env.GROQ_KEY });
 const client = new Client({ 
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ] 
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] 
 });
 
-client.on('ready', () => {
-    console.log(`✅ ${client.user.tag} aktif!`);
-    client.user.setActivity('Soruları Bekliyorum', { type: ActivityType.Listening });
-});
+client.on('ready', () => console.log(`🚀 Groq Bot ${client.user.tag} olarak hazır!`));
 
 client.on('messageCreate', async (message) => {
-    if (message.author.bot) return;
+    if (message.author.bot || !message.content.startsWith('!soru ')) return;
 
-    if (message.content === '!start') {
-        return message.reply('🚀 Bot ve YZ hazır! Sorularını bekliyorum.');
-    }
-
-    if (message.content.startsWith('!soru ')) {
-        const prompt = message.content.replace('!soru ', '');
+    const prompt = message.content.replace('!soru ', '');
+    
+    try {
+        await message.channel.sendTyping();
         
-        try {
-            await message.channel.sendTyping(); 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
-            
-            if (text.length > 2000) {
-                return message.reply("🤖 Cevap çok uzun (2000+ karakter).");
-            }
-            message.reply(text);
+        const chatCompletion = await groq.chat.completions.create({
+            messages: [{ role: "user", content: prompt }],
+            model: "llama-3.3-70b-versatile", // En güçlü ve hızlı Llama modeli
+        });
 
-        } catch (error) {
-            console.error("YZ Hatası:", error);
-            message.reply(`🤖 **Hata:** \`\`\`${error.message.substring(0, 100)}...\`\`\``);
-        }
+        const reply = chatCompletion.choices[0]?.message?.content || "Cevap alınamadı.";
+        message.reply(reply.length > 2000 ? reply.substring(0, 1990) + "..." : reply);
+
+    } catch (error) {
+        console.error("Groq Hatası:", error);
+        message.reply("❌ Bir hata oluştu, Groq servisi şu an meşgul olabilir.");
     }
 });
 
 client.login(process.env.TOKEN);
-
-
