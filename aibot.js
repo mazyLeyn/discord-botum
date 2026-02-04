@@ -49,8 +49,8 @@ client.on('messageCreate', async (message) => {
             
             message.reply(text);
         } catch (error) {
-            console.error("YZ Hatası Detayı:", error);
-            message.reply(`🤖 Bir hata oluştu! Lütfen Render'daki GEMINI_KEY anahtarını kontrol et.`);
+            const hataMesaji = error.message || "Bilinmeyen bir hata oluştu.";
+            message.reply(`🤖 **Sistem Hatası Aldım!** \n\`\`\`\n${hataMesaji}\n\`\`\``);
         }
     }
 });
