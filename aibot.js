@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, EmbedBuilder } = require('discord.js');
 const http = require('http');
 
 // GÜVENLİ VE STABİL HTTP SUNUCUSU
@@ -12,19 +12,41 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers // Yeni üyeleri ve botları tespit etmek için ŞART!
     ] 
 });
 
+// --- AYARLAR (Burayı Kendi Sunucuna Göre Doldur) ---
+const UYE_ROL_ID = '1233757496326225940'; // Normal kullanıcılar için rol ID
+const BOT_ROL_ID = '807692100723802173';   // Sunucuya gelen botlar için rol ID
 let bakimModu = false; 
-const SAHIB_ID = 'SENIN_DISCORD_ID_BURAYA'; // Kendi ID'ni buraya yazarsan daha güvenli olur
 
 client.on('ready', () => {
     console.log(`✅ ${client.user.tag} başarıyla giriş yaptı!`);
     client.user.setActivity('Aktif!', { type: ActivityType.Watching });
 });
 
-// Durum güncelleme döngüsü (Ram dostu olması için 1 dakikaya çıkardım)
+// --- AYRIMLI OTOMATİK ROL SİSTEMİ ---
+client.on('guildMemberAdd', async (member) => {
+    try {
+        if (member.user.bot) {
+            // Eğer katılan bir BOT ise
+            const botRol = member.guild.roles.cache.get(BOT_ROL_ID);
+            if (botRol) await member.roles.add(botRol);
+            console.log(`🤖 Yeni bot geldi: ${member.user.tag}, Bot rolü verildi.`);
+        } else {
+            // Eğer katılan bir İNSAN ise
+            const uyeRol = member.guild.roles.cache.get(UYE_ROL_ID);
+            if (uyeRol) await member.roles.add(uyeRol);
+            console.log(`👤 Yeni üye geldi: ${member.user.tag}, Üye rolü verildi.`);
+        }
+    } catch (err) {
+        console.error("❌ Rol verme hatası! Botun rolü, vermeye çalıştığı rolden daha aşağıda olabilir.", err);
+    }
+});
+
+// Durum güncelleme döngüsü
 setInterval(() => {
     const status = bakimModu ? 'Bakımda...' : 'Aktif!';
     const type = bakimModu ? ActivityType.Custom : ActivityType.Watching;
@@ -46,7 +68,7 @@ client.on('messageCreate', async (message) => {
     if (mesaj === '!ping') return message.reply(`🏓 Pong! ${client.ws.ping}ms`);
     if (mesaj === 'sa') return message.reply('Aleyküm Selam!');
 
-    // Bakım Yönetimi (Sadece yönetici yetkisi olanlar)
+    // Bakım Yönetimi
     if (mesaj === '!bakımaç' && message.member.permissions.has('Administrator')) {
         bakimModu = true;
         return message.reply('🚨 Bakım modu açıldı.');
