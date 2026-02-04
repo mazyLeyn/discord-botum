@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const http = require('http');
 
-// Render Uyku Engelleyici Sunucu
+// Render Uyku Engelleyici
 http.createServer((req, res) => {
     res.write("Bot Aktif!");
     res.end();
@@ -42,7 +42,7 @@ client.on('messageCreate', async (message) => {
             const text = response.text();
             
             if (text.length > 2000) {
-                return message.reply("🤖 Cevap 2000 karakteri aşıyor.");
+                return message.reply("🤖 Cevap çok uzun (2000+ karakter).");
             }
             message.reply(text);
 
@@ -54,4 +54,3 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(process.env.TOKEN);
-
