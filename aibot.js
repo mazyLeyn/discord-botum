@@ -13,13 +13,14 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers // Yeni üyeleri ve botları tespit etmek için ŞART!
+        GatewayIntentBits.GuildMembers // ŞART!
     ] 
 });
 
-// --- AYARLAR (Burayı Kendi Sunucuna Göre Doldur) ---
-const UYE_ROL_ID = '1233757496326225940'; // Normal kullanıcılar için rol ID
-const BOT_ROL_ID = '807692100723802173';   // Sunucuya gelen botlar için rol ID
+// --- AYARLAR ---
+const UYE_ROL_ID = '1233757496326225940'; 
+const BOT_ROL_ID = '807692100723802173';  
+const LOG_KANAL_ID = '1233781589796716614'; // Mesajların gideceği oda ID
 let bakimModu = false; 
 
 client.on('ready', () => {
@@ -27,22 +28,42 @@ client.on('ready', () => {
     client.user.setActivity('Aktif!', { type: ActivityType.Watching });
 });
 
-// --- AYRIMLI OTOMATİK ROL SİSTEMİ ---
+// --- AYRIMLI OTOMATİK ROL VE LOG SİSTEMİ ---
 client.on('guildMemberAdd', async (member) => {
+    const logKanali = member.guild.channels.cache.get(LOG_KANAL_ID);
+    
     try {
         if (member.user.bot) {
-            // Eğer katılan bir BOT ise
+            // BOT GELDİĞİNDE
             const botRol = member.guild.roles.cache.get(BOT_ROL_ID);
             if (botRol) await member.roles.add(botRol);
-            console.log(`🤖 Yeni bot geldi: ${member.user.tag}, Bot rolü verildi.`);
+            
+            if (logKanali) {
+                const botEmbed = new EmbedBuilder()
+                    .setColor('#5865F2')
+                    .setTitle('🤖 Yeni Bot Katıldı')
+                    .setDescription(`Sunucuya yeni bir bot eklendi: ${member}\nVerilen Rol: <@&${BOT_ROL_ID}>`)
+                    .setTimestamp();
+                logKanali.send({ embeds: [botEmbed] });
+            }
         } else {
-            // Eğer katılan bir İNSAN ise
+            // İNSAN GELDİĞİNDE
             const uyeRol = member.guild.roles.cache.get(UYE_ROL_ID);
             if (uyeRol) await member.roles.add(uyeRol);
-            console.log(`👤 Yeni üye geldi: ${member.user.tag}, Üye rolü verildi.`);
+            
+            if (logKanali) {
+                const uyeEmbed = new EmbedBuilder()
+                    .setColor('#2ECC71')
+                    .setTitle('📥 Aramıza Hoş Geldin!')
+                    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+                    .setDescription(`Merhaba ${member}! Sunucuya hoş geldin.\nSeninle birlikte **${member.guild.memberCount}** kişi olduk! ✨\n\nOtomatik rolün tanımlandı: <@&${UYE_ROL_ID}>`)
+                    .setFooter({ text: 'Keyifli vakit geçirmeni dileriz!' })
+                    .setTimestamp();
+                logKanali.send({ embeds: [uyeEmbed] });
+            }
         }
     } catch (err) {
-        console.error("❌ Rol verme hatası! Botun rolü, vermeye çalıştığı rolden daha aşağıda olabilir.", err);
+        console.error("❌ Rol/Mesaj hatası:", err);
     }
 });
 
@@ -56,7 +77,6 @@ setInterval(() => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
-    // Bakım Modu Koruması
     if (bakimModu && !message.member.permissions.has('Administrator')) {
         if (message.content.startsWith('!')) return message.reply('🛠️ Bot şu anda bakımda.');
         return;
@@ -64,11 +84,9 @@ client.on('messageCreate', async (message) => {
 
     const mesaj = message.content.toLowerCase();
 
-    // Komutlar
     if (mesaj === '!ping') return message.reply(`🏓 Pong! ${client.ws.ping}ms`);
     if (mesaj === 'sa') return message.reply('Aleyküm Selam!');
 
-    // Bakım Yönetimi
     if (mesaj === '!bakımaç' && message.member.permissions.has('Administrator')) {
         bakimModu = true;
         return message.reply('🚨 Bakım modu açıldı.');
